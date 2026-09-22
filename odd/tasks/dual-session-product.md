@@ -59,7 +59,7 @@ User explicitly selected the "Portable, any machine" scope.
       `plughw:CARD=...`, WirePlumber + PipeWire confs from config, audio restart).
 - [x] T4 `lib/ui.sh`: generalized session-switch merge for caelestia
       `shell.json` (backup, merge-only, restore hook); any other seat0 session as target.
-- [ ] T5 `setup.sh`: orchestrator — audio for current user, conditional UI,
+- [x] T5 `setup.sh`: orchestrator — audio for current user, conditional UI,
       `--check`/`--dry-run`/`--uninstall`, summary with verification commands.
 - [ ] T6 `install.sh` + `uninstall.sh` + generated `.desktop` (location-independent).
 - [ ] T7 Remove `andrik/` duplicate and old `.desktop` from repo.
@@ -101,6 +101,10 @@ User explicitly selected the "Portable, any machine" scope.
   click time), launcher action appended only when absent (no duplicate),
   all other keys preserved (14 acciones / 7 quickToggles), JSON válido,
   re-run "Sin cambios", `ui_remove` restores backup.
+- T5: done (`390d6d8`) — `setup.sh` (executable). Live verification on this
+  machine: `./setup.sh --check` exit 0, `.asoundrc`/`shell.json` mtime+sha256
+  unchanged, config not created; `./setup.sh --dry-run` exit 0, every step
+  `[simulación]` incl. restart, no files/backups written, pch count stable.
 - Remaining: see task list.
 
 ## Delivery
