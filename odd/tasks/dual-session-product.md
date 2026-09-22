@@ -121,6 +121,28 @@ User explicitly selected the "Portable, any machine" scope.
 - DONE — all tasks closed with work-unit Conventional Commits.
 - Remaining: none after T8.
 
+## Native review (gentle-ai, RDD) — closed by operator disposition
+- START: lineage `review-084d5f8adf897df2`, target `sha256:ce836496…a9ed`,
+  base-diff vs `main` (17 paths, 1906 changed lines, tier high, budget 200);
+  user consented (granted).
+- Failure: the 4 reviewer Tasks (`review-risk`, `review-resilience`,
+  `review-readability`, `review-reliability`) all failed with
+  `OpenCode's free tier can only be used from within OpenCode`. Root cause:
+  sub-agent model provider (inherited Zen gateway; no credentials configured
+  via `opencode auth`). Environment/provider limitation, NOT a Gentle AI
+  defect, NOT a candidate defect — no defect handoff.
+- STATUS re-offered the same bound collect slot; per contract no blind retry
+  into the same provider failure; one actionable decision surfaced to the user.
+- Decision: user chose **Abandon review and deliver**.
+- Abandon committed (`gentle-ai.review-reclaim-record/v1`,
+  reason `operator_disposition`, actor `user-caelestia`, discarded_lens_results
+  empty, findings_present false); authority quarantined under
+  `.git/gentle-ai/review-transactions/quarantine/`.
+- Post-abandon `gentle-ai review status --cwd .` → `entries: []`, lock
+  released. Delivery is unmanaged under ordinary repository policy: the review
+  neither approves nor blocks; the functional verification suite above stands
+  (bash -n, --check, --dry-run, fake-HOME cycles).
+
 ## Delivery
 - Forecast ~1900 authored lines (baseline ~904 to be deleted + ~1000 new,
   generated files excluded) → exceeds 400. Strategy: `ask-on-risk`.
