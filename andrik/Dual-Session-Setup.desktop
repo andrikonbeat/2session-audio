@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Dual-Session Setup
+Comment=Reinstala audio compartido (dmix) y el boton de cambio de sesion en Caelestia. Correr una vez por usuario con audio.
+Exec=/mnt/Projects/05 - Develop/Proyectos/2- Finish/Dual-Session-Setup/andrik/dual-session-setup-all.sh
+Icon=audio-speakers
+Terminal=true
+Categories=System;
