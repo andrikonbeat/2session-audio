@@ -82,13 +82,14 @@ User explicitly selected the "Portable, any machine" scope.
   framework configured; ordinary functional checks apply).
 
 ## Verification & progress
-- T1: done — repo created, baseline + this document committed. Feature
-  document mirrored to Engram `odd/dual-session-product/tasks`.
+- T1: done — repo created (`git init -b main`), baseline commit `01d7c58`,
+  feature doc commit `dd5266f`. Engram mirror: PENDING (MCP server rejected
+  save twice, no registered session) — resync when available.
 - Remaining: see task list.
 
 ## Delivery
-- Forecast ~900–1300 authored lines (additions+deletions, generated files
-  excluded) → exceeds 400. Strategy: `ask-on-risk`.
+- Forecast ~1900 authored lines (baseline ~904 to be deleted + ~1000 new,
+  generated files excluded) → exceeds 400. Strategy: `ask-on-risk`.
 - No remote configured → chain/PR strategy deferred; work-unit commits stay
   local. Running count recorded here as commits land.
 - Record per task: route (inline/delegated) + trigger evidence.
