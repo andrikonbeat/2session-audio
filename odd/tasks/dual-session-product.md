@@ -61,8 +61,8 @@ User explicitly selected the "Portable, any machine" scope.
       `shell.json` (backup, merge-only, restore hook); any other seat0 session as target.
 - [x] T5 `setup.sh`: orchestrator — audio for current user, conditional UI,
       `--check`/`--dry-run`/`--uninstall`, summary with verification commands.
-- [ ] T6 `install.sh` + `uninstall.sh` + generated `.desktop` (location-independent).
-- [ ] T7 Remove `andrik/` duplicate and old `.desktop` from repo.
+- [x] T6 `install.sh` + `uninstall.sh` + generated `.desktop` (location-independent).
+- [x] T7 Remove `andrik/` duplicate and old `.desktop` from repo.
 - [ ] T8 `README.md` + final verification: `bash -n` on every script, dry-run smoke test.
 
 ## Acceptance criteria
@@ -105,12 +105,23 @@ User explicitly selected the "Portable, any machine" scope.
   machine: `./setup.sh --check` exit 0, `.asoundrc`/`shell.json` mtime+sha256
   unchanged, config not created; `./setup.sh --dry-run` exit 0, every step
   `[simulación]` incl. restart, no files/backups written, pch count stable.
-- Remaining: see task list.
+- T6: done (`7acaa77`) — `install.sh` + `uninstall.sh` (both executable).
+  Fake-HOME cycle: install → installed copy location-independent (own lib/,
+  `--check` exit 0, UI correctly off without shell.json) → uninstall from the
+  installed copy removes EVERYTHING (find: nothing left), second uninstall
+  idempotent; `setup.sh --uninstall` delegation verified.
+- T7: done (`d78a48b`) — legacy scripts + `andrik/` + old `.desktop` removed
+  (904 deletions, matches forecast). Repo root now: setup.sh, install.sh,
+  uninstall.sh, lib/, README (T8), odd/.
+- T8: README + final verification, see commit.
+- Remaining: none after T8.
 
 ## Delivery
 - Forecast ~1900 authored lines (baseline ~904 to be deleted + ~1000 new,
   generated files excluded) → exceeds 400. Strategy: `ask-on-risk`.
 - No remote configured → chain/PR strategy deferred; work-unit commits stay
   local. Running count recorded here as commits land.
-- Running authored count vs baseline `01d7c58`: T2 `9542c3f` → +429 lines.
+- Running authored count vs baseline `01d7c58`: T2 `9542c3f` → +429;
+  T5 `390d6d8` → +719; T6 `7acaa77` → +868; before T8 (T7 applied): +959/−904
+  (16 files changed, 959 insertions, 904 deletions).
 - Record per task: route (inline/delegated) + trigger evidence.
