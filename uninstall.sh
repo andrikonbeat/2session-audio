@@ -9,7 +9,20 @@
 # User-modified files are NEVER deleted; their backups are kept and reported.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# BASH_SOURCE[0] is unset under `set -u` when the script is piped via
+# curl/stdin; default to empty and let the piped-mode guard below handle it.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" && pwd)"
+
+# Piped mode: when the script is run via curl, lib/ is not next to it. Source
+# the libs from the installed copy instead; exit 0 (idempotent) when neither
+# location has an installation.
+if [ ! -f "$DIR/lib/common.sh" ]; then
+  DIR="$HOME/.local/share/dual-session-setup"
+  if [ ! -f "$DIR/lib/common.sh" ]; then
+    echo "No se encontró una instalación de Dual-Session Setup; no hay nada que desinstalar."
+    exit 0
+  fi
+fi
 # shellcheck disable=SC1091
 . "$DIR/lib/common.sh"
 # shellcheck disable=SC1091
