@@ -7,7 +7,39 @@
 # desktop entry.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Canonical GitHub source used when the script is piped via curl and lib/ is
+# not available next to the running script.
+GITHUB_OWNER="andrikonbeat"
+GITHUB_REPO="Dual-Session-Setup"
+GITHUB_BRANCH="main"
+GITHUB_TARBALL_URL="https://codeload.github.com/$GITHUB_OWNER/$GITHUB_REPO/tar.gz/refs/heads/$GITHUB_BRANCH"
+
+# BASH_SOURCE[0] is unset under `set -u` when the script is piped via
+# curl/stdin; default to empty and let the bootstrap guard below handle it.
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" && pwd)"
+
+# Bootstrap mode: when the script is piped via curl it runs from a temp/pipe
+# location and lib/ is not next to it. Download the source tarball instead.
+if [ ! -f "$DIR/lib/common.sh" ]; then
+  echo "Descargando Dual-Session Setup desde GitHub..."
+  if ! command -v curl >/dev/null 2>&1 || ! command -v tar >/dev/null 2>&1; then
+    echo "Error: se necesitan curl y tar para instalar desde GitHub." >&2
+    echo "Instálalos o clona el repositorio y ejecuta ./install.sh." >&2
+    exit 1
+  fi
+  TMP="$(mktemp -d)"
+  trap 'rm -rf "$TMP"' EXIT
+  curl -fsSL "$GITHUB_TARBALL_URL" | tar -xz -C "$TMP"
+  # The archive extracts under a folder named <repo>-<branch>; locate lib/
+  # anywhere in the temp dir as a guard against upstream renames.
+  TARBALL_COMMON="$(find "$TMP" -maxdepth 3 -name common.sh -path '*/lib/*' -printf '%p\n' | head -1)"
+  if [ -z "$TARBALL_COMMON" ]; then
+    echo "Error: la descarga de GitHub no contiene lib/common.sh." >&2
+    exit 1
+  fi
+  DIR="$(cd "$(dirname "$(dirname "$TARBALL_COMMON")")" && pwd)"
+fi
+
 DEST="$HOME/.local/share/dual-session-setup"
 APPS="$HOME/.local/share/applications"
 
