@@ -63,7 +63,7 @@ User explicitly selected the "Portable, any machine" scope.
       `--check`/`--dry-run`/`--uninstall`, summary with verification commands.
 - [x] T6 `install.sh` + `uninstall.sh` + generated `.desktop` (location-independent).
 - [x] T7 Remove `andrik/` duplicate and old `.desktop` from repo.
-- [ ] T8 `README.md` + final verification: `bash -n` on every script, dry-run smoke test.
+- [x] T8 `README.md` + final verification: `bash -n` on every script, dry-run smoke test.
 
 ## Acceptance criteria
 - Runs on a machine with different codec/PCI slot without editing scripts
@@ -113,7 +113,12 @@ User explicitly selected the "Portable, any machine" scope.
 - T7: done (`d78a48b`) — legacy scripts + `andrik/` + old `.desktop` removed
   (904 deletions, matches forecast). Repo root now: setup.sh, install.sh,
   uninstall.sh, lib/, README (T8), odd/.
-- T8: README + final verification, see commit.
+- T8: done (`b781449`) — `README.md`. Final suite PASS: (1) `bash -n` on all
+  6 scripts; (2) `./setup.sh --check` exit 0, `.asoundrc`+`shell.json`
+  sha256/mtime unchanged, no config created, pch count stable at 1 (pre-existing
+  file), no backups; (3) `./setup.sh --dry-run` exit 0, same no-mutation
+  checks, zero real systemctl restarts, 12 steps all `[simulación]`.
+- DONE — all tasks closed with work-unit Conventional Commits.
 - Remaining: none after T8.
 
 ## Delivery
@@ -123,5 +128,7 @@ User explicitly selected the "Portable, any machine" scope.
   local. Running count recorded here as commits land.
 - Running authored count vs baseline `01d7c58`: T2 `9542c3f` → +429;
   T5 `390d6d8` → +719; T6 `7acaa77` → +868; before T8 (T7 applied): +959/−904
-  (16 files changed, 959 insertions, 904 deletions).
+  (16 files changed, 959 insertions, 904 deletions); final (all commits):
+  see `git diff --stat 01d7c58` → 9 files/957 (new product, README, docs),
+  no legacy files remain.
 - Record per task: route (inline/delegated) + trigger evidence.
