@@ -4,6 +4,23 @@ Run one ALSA sound card from two graphical sessions at the same time, on the
 same machine, without editing config files or using sudo. Run once per user
 that needs audio, and both sessions share the same card through an ALSA dmix.
 
+## Quick install
+
+Install with one line (requires `curl`, present on most Linux desktops):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/andrikonbeat/Dual-Session-Setup/main/install.sh | bash
+```
+
+Uninstall with one line:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/andrikonbeat/Dual-Session-Setup/main/uninstall.sh | bash
+```
+
+The classic clone-based install still works: `git clone` the repository and
+run `./install.sh` from the checkout.
+
 ## What and why
 
 A typical on-board HDA card exposes a single substream. The first session's
