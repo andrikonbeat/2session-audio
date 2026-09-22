@@ -57,7 +57,7 @@ User explicitly selected the "Portable, any machine" scope.
       detection (codec scan + non-HDMI fallback + slot), logging, backup/restore helpers.
 - [x] T3 `lib/audio.sh`: generalized audio setup (deterministic dmix keys,
       `plughw:CARD=...`, WirePlumber + PipeWire confs from config, audio restart).
-- [ ] T4 `lib/ui.sh`: generalized session-switch merge for caelestia
+- [x] T4 `lib/ui.sh`: generalized session-switch merge for caelestia
       `shell.json` (backup, merge-only, restore hook); any other seat0 session as target.
 - [ ] T5 `setup.sh`: orchestrator — audio for current user, conditional UI,
       `--check`/`--dry-run`/`--uninstall`, summary with verification commands.
@@ -95,6 +95,12 @@ User explicitly selected the "Portable, any machine" scope.
   WP/PW confs, manifest with 4 signatures; re-run idempotent ("Sin cambios");
   remove restores pre-install `.asoundrc`, second remove silent; user-modified
   `.asoundrc` never deleted, backup kept.
+- T4: done (`4f32145`) — `lib/ui.sh`. Fake-HOME merge test on a copy of the
+  real `shell.json`: `session.icons.hibernate=switch_account`,
+  `session.commands.hibernate` = generalized command (literal `$USER` at
+  click time), launcher action appended only when absent (no duplicate),
+  all other keys preserved (14 acciones / 7 quickToggles), JSON válido,
+  re-run "Sin cambios", `ui_remove` restores backup.
 - Remaining: see task list.
 
 ## Delivery
