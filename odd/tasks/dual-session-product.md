@@ -55,7 +55,7 @@ User explicitly selected the "Portable, any machine" scope.
       document + Engram mirror.
 - [x] T2 `lib/common.sh`: config loader (defaults + overrides), hardware
       detection (codec scan + non-HDMI fallback + slot), logging, backup/restore helpers.
-- [ ] T3 `lib/audio.sh`: generalized audio setup (deterministic dmix keys,
+- [x] T3 `lib/audio.sh`: generalized audio setup (deterministic dmix keys,
       `plughw:CARD=...`, WirePlumber + PipeWire confs from config, audio restart).
 - [ ] T4 `lib/ui.sh`: generalized session-switch merge for caelestia
       `shell.json` (backup, merge-only, restore hook); any other seat0 session as target.
@@ -90,6 +90,11 @@ User explicitly selected the "Portable, any machine" scope.
   `pci-0000_00_1f.3`, `CARD_ALSA_NAME=PCH` (padded column trimmed),
   `IPC_KEY_BASE=70279166` / `+1=70279167`, ENABLE_UI default 1 (shell.json
   present). `bash -n` passes.
+- T3: done (`e5b4314`) — `lib/audio.sh`. Fake-HOME cycle test (stubbed
+  restart): install → `.asoundrc` with `plughw:CARD=PCH,DEV=0` + derived keys,
+  WP/PW confs, manifest with 4 signatures; re-run idempotent ("Sin cambios");
+  remove restores pre-install `.asoundrc`, second remove silent; user-modified
+  `.asoundrc` never deleted, backup kept.
 - Remaining: see task list.
 
 ## Delivery
