@@ -53,7 +53,7 @@ User explicitly selected the "Portable, any machine" scope.
 ## Tasks
 - [ ] T1 Repo bootstrap: `git init`, baseline commit of existing files, feature
       document + Engram mirror.
-- [ ] T2 `lib/common.sh`: config loader (defaults + overrides), hardware
+- [x] T2 `lib/common.sh`: config loader (defaults + overrides), hardware
       detection (codec scan + non-HDMI fallback + slot), logging, backup/restore helpers.
 - [ ] T3 `lib/audio.sh`: generalized audio setup (deterministic dmix keys,
       `plughw:CARD=...`, WirePlumber + PipeWire confs from config, audio restart).
@@ -85,6 +85,11 @@ User explicitly selected the "Portable, any machine" scope.
 - T1: done — repo created (`git init -b main`), baseline commit `01d7c58`,
   feature doc commit `dd5266f`. Engram mirror: PENDING (MCP server rejected
   save twice, no registered session) — resync when available.
+- T2: done (`9542c3f`) — `lib/common.sh` added (+ `.gitignore` for `.atl/`
+  runtime artifacts). Verified on this machine: ALC887-VD → card0 →
+  `pci-0000_00_1f.3`, `CARD_ALSA_NAME=PCH` (padded column trimmed),
+  `IPC_KEY_BASE=70279166` / `+1=70279167`, ENABLE_UI default 1 (shell.json
+  present). `bash -n` passes.
 - Remaining: see task list.
 
 ## Delivery
@@ -92,4 +97,5 @@ User explicitly selected the "Portable, any machine" scope.
   generated files excluded) → exceeds 400. Strategy: `ask-on-risk`.
 - No remote configured → chain/PR strategy deferred; work-unit commits stay
   local. Running count recorded here as commits land.
+- Running authored count vs baseline `01d7c58`: T2 `9542c3f` → +429 lines.
 - Record per task: route (inline/delegated) + trigger evidence.
