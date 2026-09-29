@@ -16,7 +16,7 @@ possible install/uninstall experience. This overrides the earlier
 which the user explicitly revoked in this feature.
 
 ## Scope (authorized)
-- Public repo `Dual-Session-Setup` on `andrikonbeat` (their authenticated gh
+- Public repo `2session-audio` on `andrikonbeat` (their authenticated gh
   session, keyring credential).
 - Main branch carries the product; push `main` as the publish target.
 - `install.sh`: detect piped/bootstrap mode; when the source copy is not next
@@ -54,7 +54,7 @@ which the user explicitly revoked in this feature.
   and exits 0 when absent (idempotent).
 - T3: done (`dde0871`) — README "Quick install" with both one-liners.
 - T4: done — merged to `main` (fast-forward dd5266f..dde0871), repo created
-  public at https://github.com/andrikonbeat/Dual-Session-Setup, pushed
+  public at https://github.com/andrikonbeat/2session-audio, pushed
   (origin/main tracks). Live pipe verification with fake HOME
   (`mktemp -d`): `curl -fsSL .../install.sh | bash` installed
   setup.sh/uninstall.sh/lib into the fake home; second one-liner

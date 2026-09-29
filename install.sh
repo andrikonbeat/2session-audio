@@ -10,7 +10,7 @@ set -euo pipefail
 # Canonical GitHub source used when the script is piped via curl and lib/ is
 # not available next to the running script.
 GITHUB_OWNER="andrikonbeat"
-GITHUB_REPO="Dual-Session-Setup"
+GITHUB_REPO="2session-audio"
 GITHUB_BRANCH="main"
 GITHUB_TARBALL_URL="https://codeload.github.com/$GITHUB_OWNER/$GITHUB_REPO/tar.gz/refs/heads/$GITHUB_BRANCH"
 

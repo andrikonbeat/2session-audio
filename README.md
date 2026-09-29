@@ -9,13 +9,13 @@ that needs audio, and both sessions share the same card through an ALSA dmix.
 Install with one line (requires `curl`, present on most Linux desktops):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/andrikonbeat/Dual-Session-Setup/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/andrikonbeat/2session-audio/main/install.sh | bash
 ```
 
 Uninstall with one line:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/andrikonbeat/Dual-Session-Setup/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/andrikonbeat/2session-audio/main/uninstall.sh | bash
 ```
 
 The classic clone-based install still works: `git clone` the repository and
