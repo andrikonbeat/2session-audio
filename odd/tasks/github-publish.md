@@ -39,11 +39,34 @@ which the user explicitly revoked in this feature.
 - Conventional Commits, work-unit commits.
 
 ## Tasks
-- [ ] T1 `install.sh` bootstrap mode: tarball download fallback when lib/ is absent.
-- [ ] T2 `uninstall.sh` piped mode: libs from installed copy; not-installed no-op.
-- [ ] T3 README: one-line install/uninstall at the top + curl prerequisite note.
-- [ ] T4 Publish: merge to main, create GitHub repo, push, verify one-liner
+- [x] T1 `install.sh` bootstrap mode: tarball download fallback when lib/ is absent.
+- [x] T2 `uninstall.sh` piped mode: libs from installed copy; not-installed no-op.
+- [x] T3 README: one-line install/uninstall at the top + curl prerequisite note.
+- [x] T4 Publish: merge to main, create GitHub repo, push, verify one-liner
       syntax with a temp-dir fake-HOME run.
+
+## Verification & progress
+- T1: done (`ee0a654`) — canonical GitHub constants + codeload tarball fallback.
+  `BASH_SOURCE[0]` is unset under `set -u` when piped; uses `${BASH_SOURCE[0]:-}`.
+  Extracted repo root located via `find -maxdepth 3` guard.
+- T2: done (`452d191`) — piped uninstall sources libs from the installed copy
+  at `~/.local/share/dual-session-setup`; prints "no hay nada que desinstalar"
+  and exits 0 when absent (idempotent).
+- T3: done (`dde0871`) — README "Quick install" with both one-liners.
+- T4: done — merged to `main` (fast-forward dd5266f..dde0871), repo created
+  public at https://github.com/andrikonbeat/Dual-Session-Setup, pushed
+  (origin/main tracks). Live pipe verification with fake HOME
+  (`mktemp -d`): `curl -fsSL .../install.sh | bash` installed
+  setup.sh/uninstall.sh/lib into the fake home; second one-liner
+  `uninstall.sh | bash` removed everything (find count = 0). First attempt
+  failed only because `/tmp/opencode` is not writable (permission denied) —
+  rerun with `mktemp -d` passed.
+- Native review for this candidate (main..feat/github-publish, lineage
+  `review-1bc7448bd62d5e9c`, 18 files / 2044 lines, high): user chose
+  **Skip this time** (declined) — no review record created, delivery under
+  ordinary repository policy; the exact decline invocation returned
+  `action: declined`, `consent: declined_this_candidate`.
+- Done — published and verified.
 
 ## Approval & verification
 - `bash -n` on install.sh/uninstall.sh.
