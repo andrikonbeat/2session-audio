@@ -1,204 +1,200 @@
 # 2session-audio
 
-Share one ALSA sound card between two graphical sessions on the same Linux
-machine — no config file editing, no sudo. Install once per user that needs
-audio; every session opens the card through a shared ALSA dmix and the same
-sound works everywhere.
+¿Tenés **dos cuentas (o dos sesiones) en la misma computadora** y solo una
+tiene sonido? Este programa hace que **las dos suenen al mismo tiempo**.
 
-## Quick start
+No necesitás permisos de administrador, no hay que editar archivos a mano, y
+se puede deshacer con un comando.
 
-### 1. Install (one line)
+## Instalación: un solo comando
 
-Requires `curl` (present on most Linux desktops):
+Abrí una terminal y pegá esto (pegás con `Ctrl+Shift+V`). Hacelo en **cada
+cuenta** que necesite sonido:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/andrikonbeat/2session-audio/main/install.sh | bash
 ```
 
-Alternative: `git clone https://github.com/andrikonbeat/2session-audio` and run
-`./install.sh` from the checkout. Either way the product lands in
-`~/.local/share/dual-session-setup/` and a desktop menu entry is added.
+Eso es todo. El comando **instala y configura** el audio de la cuenta en la que
+lo corrés, y agrega una entrada en el menú de aplicaciones.
 
-### 2. Run the setup in EVERY user account that needs audio
+**Si tenés dos cuentas:** iniciá sesión en la otra y corré el mismo comando.
+Es el único paso que falta para que las dos suenen juntas a la vez.
 
-```sh
-~/.local/share/dual-session-setup/setup.sh
-```
+## ¿Qué hace exactamente?
 
-Run it once per user (or once per graphical session), not just once per
-machine. The second user does **not** need a separate configuration — the
-shared keys are derived deterministically from the card's PCI slot, so every
-account computes the same values.
+1. Detecta tu tarjeta de sonido (no hay que elegir nada).
+2. La comparte entre tus cuentas, para que puedan sonar al mismo tiempo.
+3. Deja el volumen de la placa al máximo, para que se escuche fuerte aunque el
+   control de volumen de cada sesión esté aparte.
 
-### 3. Verify
+Todo es reversible y **no toca tus archivos personales**: si ya tenías una
+configuración de audio propia, se guarda como respaldo antes de tocar nada.
 
-```sh
-wpctl status      # look for "PCH dmix compartido (dual-session)"
-```
+## Si algo no anda
 
-or play a test tone (Ctrl-C to stop):
+| Qué ves | Qué hacer |
+|---|---|
+| Solo una cuenta tiene sonido | Corré el comando de instalación también en la otra cuenta. |
+| Se escucha bajito aunque el volumen esté al 100% | Cerrá la sesión y volvé a entrar (o reiniciá). El arreglo se aplica solo al iniciar sesión. |
+| Quiero ver qué detectó | `~/.local/share/dual-session-setup/setup.sh --check` |
+| Se rompió algo | Desinstalá (abajo) y volvé a instalar. |
 
-```sh
-aplay -D plug:dmix_pch -t raw -r 48000 -c 2 -f S16_LE /dev/zero
-```
+## Desinstalar
 
-### Uninstall (one line)
+En **cada** cuenta donde lo instalaste:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/andrikonbeat/2session-audio/main/uninstall.sh | bash
 ```
 
-Run the uninstall in every account that ran the setup. Re-running is safe: a
-second run finds nothing left to do.
+Restaura tu configuración anterior (si la había) y borra lo que creó el
+programa. Las modificaciones que hayas hecho a mano nunca se borran. Volver a
+correrlo no hace nada malo.
 
-## Requirements
+## Requisitos
 
-| Requirement | Notes |
+| Requisito | Nota |
 |---|---|
-| Linux with PipeWire + WirePlumber | The whole point is sharing via an ALSA dmix under PipeWire. |
-| systemd + logind | Used to detect and switch to the other graphical session. |
-| bash ≥ 4 | Default on virtually every modern distro. |
-| `curl` + `tar` | Only needed for the one-line install path. |
-| `python3` | Only for the optional launcher-shell (`shell.json`) integration. |
+| Linux con PipeWire + WirePlumber | Es la base sobre la que se comparte el audio. |
+| systemd + logind | Para detectar y cambiar entre sesiones. |
+| bash ≥ 4 | Es el shell por defecto en casi todas las distros modernas. |
+| `curl` + `tar` | Solo para la instalación de una línea. |
+| `python3` | Solo para el botón opcional "Switch session" del shell. |
 
-Not supported: PulseAudio-only setups, non-systemd environments, non-Linux
-platforms. Everything is detected automatically; when detection picks the
-wrong card, override it in the config file (see Configuration).
+No soportado: equipos con solo PulseAudio, sin systemd, o que no sean Linux.
+Todo se detecta solo; si detecta la placa equivocada, se puede forzar en el
+archivo de configuración (ver *Configuración*).
 
-## Why this exists
+## Detalles técnicos
 
-A typical on-board HDA card exposes a single substream. The first session's
-PipeWire grabs it exclusively and the second session ends up with a silent
-"Dummy Output" sink (`EBUSY`).
+### Por qué esto existe
 
-This product:
+Una placa HDA on-board normalmente tiene un solo flujo de audio. La primera
+sesión lo toma de forma exclusiva y la segunda termina con una salida muda
+("Dummy Output", `EBUSY`).
 
-1. Opens the card through a **shared ALSA dmix** (`~/.asoundrc`), so multiple
-   sessions can mix into the same PCM.
-2. Forces **WirePlumber** onto that shared path.
-3. Adds a **static PipeWire adapter sink** for sessions that skip the card.
-4. Pins the card's **hardware playback mixer to unity** on every login, so
-   disabling ACP does not leave the card quiet (see below).
+Este programa:
 
-Everything is auto-detected, deterministic across users, and fully reversible.
+1. Abre la placa a través de un **dmix de ALSA compartido** (`~/.asoundrc`),
+   para que varias sesiones mezclen en el mismo PCM.
+2. Fuerza a **WirePlumber** a usar ese camino compartido.
+3. Agrega un **sink estático de PipeWire** para las sesiones que no enumeran la
+   placa.
+4. Fija el **mixer de hardware de la placa al máximo** en cada inicio de sesión,
+   porque al desactivar ACP PipeWire deja de mapear el volumen al hardware.
 
-## How the shared keys work across users
+### Cómo se comparten las claves entre cuentas
 
-Both users must open the same dmix to mix into the same PCM. The IPC key is
-derived from the card's PCI slot with `cksum`, so **any account on the same
-machine computes the same two keys** (`key1 = 10000000 + (cksum % 80000000)`,
-`key2 = key1 + 1`). `ipc_key_add_uid false` and `ipc_perm 0666` make the
-shared-memory mixer accessible to both users. Running the setup once per
-account is all that is needed; the results are identical.
+Ambas cuentas deben abrir el mismo dmix para mezclar en el mismo PCM. La clave
+IPC se deriva de la ranura PCI de la placa con `cksum`, así que **cualquier
+cuenta de la misma máquina calcula las dos mismas claves**
+(`key1 = 10000000 + (cksum % 80000000)`, `key2 = key1 + 1`).
+`ipc_key_add_uid false` y `ipc_perm 0666` hacen accesible el mixer de memoria
+compartida a las dos cuentas. Alcanza con correr el setup una vez por cuenta;
+los resultados son idénticos.
 
-## Why the hardware mixer is pinned
+### Por qué se fija el mixer de hardware
 
-Forcing the card onto the shared dmix requires `api.alsa.use-acp = false` (ACP
-would otherwise take the card over). But ACP is also what maps the desktop
-volume onto the card's **hardware** mixer. With ACP off, PipeWire applies only
-*software* volume and leaves the hardware playback controls (e.g. `Master`) at
-whatever ALSA restored at boot.
+Forzar la placa al dmix compartido requiere `api.alsa.use-acp = false` (si no,
+ACP se queda con la placa). Pero ACP es también lo que mapea el volumen del
+escritorio al mixer de **hardware** de la placa. Con ACP apagado, PipeWire solo
+aplica volumen *por software* y deja los controles de hardware (p. ej.
+`Master`) en el valor que ALSA restauró al arrancar.
 
-If that saved value is below unity the card stays quiet no matter what the
-desktop slider shows — the slider reads 100% while the hardware sits at, say,
-−23 dB — and fixing it by hand does not survive a reboot, because
-`alsa-restore` re-applies the saved low value.
+Si ese valor quedó por debajo del máximo, la placa suena bajito sin importar
+qué diga el control de volumen del escritorio — el control marca 100% mientras
+el hardware está, por ejemplo, en −23 dB — y arreglarlo a mano no sobrevive al
+reinicio, porque `alsa-restore` vuelve a aplicar el valor guardado.
 
-To keep the shared setup loud, the setup writes a small script and a
-`systemd --user` oneshot unit that pin the detected card's hardware playback
-mixer to unity on every login:
+Para mantener fuerte el setup compartido, la instalación escribe un pequeño
+script y una unidad `systemd --user` (oneshot) que fijan el mixer de hardware
+de la placa detectada al máximo en cada inicio de sesión:
 
 ```
 ~/.local/share/dual-session-setup/pin-mixer.sh
 ~/.config/systemd/user/dual-session-audio-mixer.service
 ```
 
-The unit is enabled at install and removed on uninstall. Override the pinned
-controls with `MIXER_CONTROLS` (see Configuration).
+La unidad se habilita al instalar y se elimina al desinstalar. Los controles
+que se fijan se pueden cambiar con `MIXER_CONTROLS` (ver *Configuración*).
 
-## Usage reference
+### Comandos
 
-| Command | Effect |
+| Comando | Qué hace |
 |---|---|
-| `setup.sh` | Full run for the current user (audio + UI integration if enabled). Creates the config file on first run. |
-| `setup.sh --check` | Print the detected environment and file state. Writes nothing. |
-| `setup.sh --dry-run` | Simulate the full run. Writes nothing, never restarts services. |
-| `setup.sh --ui-only` | Only the launcher-shell integration (requires `shell.json`). |
-| `setup.sh --uninstall` | Restore backups and remove every file the product created. |
-| `install.sh` | Copy the product to `~/.local/share/dual-session-setup/` and add a desktop entry. |
-| `uninstall.sh` | Same as `setup.sh --uninstall`, plus removal of the installed copy and the desktop entry. |
+| `install.sh` | Instala **y configura** (lo que usa el usuario normal). |
+| `install.sh --check` | Muestra el entorno detectado. No cambia nada. |
+| `install.sh --dry-run` | Simula la instalación. No cambia nada. |
+| `install.sh --no-setup` | Solo copia el programa, no configura. |
+| `install.sh --uninstall` | Desinstala y restaura. |
+| `setup.sh` | Reconfigura el audio del usuario actual (crea la config en la primera corrida). |
+| `setup.sh --check` | Igual que `install.sh --check`. |
+| `setup.sh --dry-run` | Igual que `install.sh --dry-run`. |
+| `setup.sh --ui-only` | Solo la integración del shell (requiere `shell.json`). |
+| `uninstall.sh` | Restaura respaldos y borra todo lo que creó el programa. |
 
-## Safety guarantees
+### Garantías de seguridad
 
-- **`--check` and `--dry-run` never write or mutate anything.**
-- **Config files are never overwritten** — locals are backed up first.
-- **Your modified files are never deleted** — an uninstall keeps any file whose
-  content no longer matches the recorded signature, together with its backup.
-- **Idempotent** — re-running any command is safe.
+- **`--check` y `--dry-run` nunca escriben ni cambian nada.**
+- **Los archivos de configuración nunca se pisan**: se respaldan primero.
+- **Tus archivos modificados nunca se borran**: al desinstalar se conserva
+  cualquier archivo cuyo contenido ya no coincida con la firma registrada,
+  junto con su respaldo.
+- **Idempotente**: volver a correr cualquier comando es seguro.
 
-## Configuration
+### Configuración
 
-On the first real run, `~/.config/dual-session-setup.conf` is created with the
-detected values (mode `600`). It is never overwritten; edit it to override
-detection, then re-run `setup.sh`.
+En la primera corrida real se crea `~/.config/dual-session-setup.conf` con los
+valores detectados (modo `600`). Nunca se pisa; editá el archivo para forzar un
+valor y volvé a correr `setup.sh`.
 
-| Key | Default | Meaning |
+| Clave | Por defecto | Significado |
 |---|---|---|
-| `CARD_SLOT` | detected | PCI slot of the audio card, e.g. `pci-0000_00_1f.3`. |
-| `CARD_ALSA_NAME` | detected | ALSA short name from `/proc/asound/cards`, e.g. `PCH`. |
-| `ALSA_DEVICE` | `0` | ALSA device number. |
-| `RATE` | `48000` | Sample rate for the shared PCMs. |
-| `FORMAT` | `S16_LE` | Sample format for the shared PCMs. |
-| `CHANNELS` | `2` | Channel count for the shared PCMs. |
-| `PERIOD_SIZE` | `1024` | dmix period size. |
-| `BUFFER_SIZE` | `8192` | dmix buffer size. |
-| `ENABLE_UI` | `1` if `shell.json` exists | Enable the launcher-shell integration (`0`/`1`). |
-| `IPC_KEY_BASE` | derived | First shared dmix key; the dsnoop key is `IPC_KEY_BASE + 1`. |
-| `MIXER_CONTROLS` | `Master PCM Front` | Hardware playback controls pinned to 100% on login (space-separated). Set the controls your card actually exposes. |
+| `CARD_SLOT` | detectado | Ranura PCI de la placa, p. ej. `pci-0000_00_1f.3`. |
+| `CARD_ALSA_NAME` | detectado | Nombre corto ALSA de `/proc/asound/cards`, p. ej. `PCH`. |
+| `ALSA_DEVICE` | `0` | Número de dispositivo ALSA. |
+| `RATE` | `48000` | Frecuencia de muestreo de los PCM compartidos. |
+| `FORMAT` | `S16_LE` | Formato de muestra de los PCM compartidos. |
+| `CHANNELS` | `2` | Cantidad de canales de los PCM compartidos. |
+| `PERIOD_SIZE` | `1024` | Tamaño de período del dmix. |
+| `BUFFER_SIZE` | `8192` | Tamaño de buffer del dmix. |
+| `ENABLE_UI` | `1` si existe `shell.json` | Activa la integración del shell (`0`/`1`). |
+| `IPC_KEY_BASE` | derivado | Primera clave dmix compartida; la de dsnoop es `IPC_KEY_BASE + 1`. |
+| `MIXER_CONTROLS` | `Master PCM Front` | Controles de hardware que se fijan al 100% en cada login. Poné los que exponga tu placa. |
 
-### Detection order
+### Orden de detección
 
-1. Scan `/proc/asound/card*/codec#0` for on-board codec signatures (Realtek
-   `ALC*`, `VT*`, `CX*`, `STAC*`, Sigmatel, Analog Devices).
-2. Fallback: first card whose sysfs device class is `0403` (Audio) and whose
-   short name is not HDMI / Display Audio.
-3. Last resort: `card0`.
+1. Escanea `/proc/asound/card*/codec#0` buscando firmas de códecs on-board
+   (Realtek `ALC*`, `VT*`, `CX*`, `STAC*`, Sigmatel, Analog Devices).
+2. Alternativa: la primera placa cuya clase de dispositivo en sysfs sea `0403`
+   (Audio) y cuyo nombre corto no sea HDMI / Display Audio.
+3. Último recurso: `card0`.
 
-Override anything with the config file when detection picks the wrong card.
+Forzá cualquier valor con el archivo de configuración si detecta la placa
+equivocada.
 
-## Troubleshooting
-
-| Symptom | Cause and fix |
-|---|---|
-| "Dummy Output" sink after setup | The card is not forced onto the dmix. Check `wpctl status` and that `~/.config/wireplumber/wireplumber.conf.d/51-pch-shared-dmix.conf` exists; restart the session. |
-| `aplay: ... Device or resource busy` | Another process grabs the substream directly. Both sessions must use `dmix_pch`; never address the card with `hw:...` in custom configs. |
-| Sound does not mix across users | Shared-memory key mismatch. Keys derive from the PCI slot; if a config override sets `IPC_KEY_BASE`, it must be identical in every account. |
-| Card moved to a different PCI slot | Detection is slot-based. Check `setup.sh --check`, fix `CARD_SLOT` (and `CARD_ALSA_NAME`) in the config, re-run the setup on every account. |
-| `setup.sh --check` shows the wrong card | Override `CARD_SLOT` / `CARD_ALSA_NAME` / `ALSA_DEVICE` in the config file. |
-| Sound is very quiet at 100% (the slider lies) | With ACP off, PipeWire cannot raise the card's hardware mixer. Check `amixer -c PCH sget Master`; the product pins `MIXER_CONTROLS` on login. If your card has no `Master`, set `MIXER_CONTROLS` to the controls it does expose, then `systemctl --user restart dual-session-audio-mixer.service`. |
-| `dual-session-audio-mixer.service` not found | Run `setup.sh` in this account (the unit is per user). Confirm the script exists at `~/.local/share/dual-session-setup/pin-mixer.sh` and re-run `systemctl --user daemon-reload`. |
-
-## What gets installed
+### Qué se instala
 
 ```
 ~/.local/share/dual-session-setup/
-├── setup.sh        # main orchestrator
-├── install.sh
+├── setup.sh        # configura el audio (re-ejecutable)
 ├── uninstall.sh
 └── lib/
-    ├── common.sh   # detection, config, backup/restore
-    ├── audio.sh    # asoundrc + WirePlumber/PipeWire confs
-    ├── mixer.sh    # pin the hardware playback mixer to unity on login
-    └── ui.sh       # launcher-shell (shell.json) merge integration
+    ├── common.sh   # detección, config, respaldo/restauración
+    ├── audio.sh    # asoundrc + confs de WirePlumber/PipeWire
+    ├── mixer.sh    # fija el mixer de hardware al máximo en cada login
+    └── ui.sh       # integración opcional del shell (shell.json)
 ```
 
-Plus, on first run: `~/.config/dual-session-setup.conf` and
-`~/.config/dual-session-setup.manifest` (the signature list used by the
-uninstaller), and a `systemd --user` unit
-`~/.config/systemd/user/dual-session-audio-mixer.service` with its helper
-`~/.local/share/dual-session-setup/pin-mixer.sh`.
+Además, en la primera corrida: `~/.config/dual-session-setup.conf` y
+`~/.config/dual-session-setup.manifest` (la lista de firmas que usa el
+desinstalador), la unidad `systemd --user`
+`~/.config/systemd/user/dual-session-audio-mixer.service` con su script
+`~/.local/share/dual-session-setup/pin-mixer.sh`, y una entrada de menú en
+`~/.local/share/applications/dual-session-setup.desktop`.
 
-## Support
+## Soporte
 
-Found a bug or want a feature? Open an issue at
+¿Encontraste un problema o querés una función nueva? Abrí un issue en
 https://github.com/andrikonbeat/2session-audio/issues
