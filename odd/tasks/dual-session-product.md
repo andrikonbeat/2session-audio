@@ -24,7 +24,9 @@ User explicitly selected the "Portable, any machine" scope.
 - Generalize hardware detection beyond the hardcoded codec list; fallback to
   the first non-HDMI HDA card; config file overrides.
 - Deterministic per-card dmix/dsnoop IPC keys (identical on every user account).
-- Use `plughw:CARD=<name>,DEV=0` instead of `hw:0,0` where supported.
+- Use `hw:CARD=<name>,DEV=0` as the dmix/dsnoop slave (dmix only attaches to an
+  `hw` PCM; `plughw` is rejected — corrected post-delivery, see the correction
+  note at the end of this document).
 - Generalized session-switch integration: target any other active graphical
   session on seat0; MERGE (never overwrite) `shell.json`; backup + restore.
 - Installer to `~/.local/share/dual-session-setup/` + `~/.local/share/applications/`.
@@ -154,3 +156,19 @@ User explicitly selected the "Portable, any machine" scope.
   see `git diff --stat 01d7c58` → 9 files/957 (new product, README, docs),
   no legacy files remain.
 - Record per task: route (inline/delegated) + trigger evidence.
+
+## Correction (post-delivery): dmix slave must be `hw`, not `plughw`
+- Symptom: after the one-command install, the whole session lost audio.
+- Root cause: `lib/audio.sh` wrote `pcm "plughw:CARD=…,DEV=…"` inside the
+  `dmix_pch`/`dsnoop_pch` slaves. ALSA rejects it:
+  `dmix plugin can be only connected to hw plugin` → `plug:dmix_pch` fails to
+  open → the PipeWire adapter cannot be created → `pipewire.service` exits and
+  hits `start-limit-hit`, taking `pipewire-pulse` and `wireplumber` down too.
+- Fix: the slave is now `pcm "hw:CARD=…,DEV=…"`; format/rate conversion is
+  provided by the existing outer `pcm.plug_dmix_pch` (`type plug` wrapper).
+- Guard: `tests/smoke.sh` asserts the generated `~/.asoundrc` contains
+  `pcm "hw:CARD=` and never `plughw`.
+- The historical task/verification lines above keep the original `plughw` text
+  as written at the time; this note supersedes them.
+- Affected file: `lib/audio.sh` (lines 36 and 55). Tracked in
+  `odd/tasks/fix-dmix-hw-slave.md`.
