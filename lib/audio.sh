@@ -33,7 +33,7 @@ pcm.dmix_pch {
     ipc_key_add_uid false
     ipc_perm 0666
     slave {
-        pcm "plughw:CARD=${CARD_ALSA_NAME},DEV=${ALSA_DEVICE}"
+        pcm "hw:CARD=${CARD_ALSA_NAME},DEV=${ALSA_DEVICE}"
         period_time 0
         period_size ${PERIOD_SIZE}
         buffer_size ${BUFFER_SIZE}
@@ -52,7 +52,7 @@ pcm.dsnoop_pch {
     ipc_key_add_uid false
     ipc_perm 0666
     slave {
-        pcm "plughw:CARD=${CARD_ALSA_NAME},DEV=${ALSA_DEVICE}"
+        pcm "hw:CARD=${CARD_ALSA_NAME},DEV=${ALSA_DEVICE}"
         period_time 0
         period_size ${PERIOD_SIZE}
         buffer_size ${BUFFER_SIZE}
