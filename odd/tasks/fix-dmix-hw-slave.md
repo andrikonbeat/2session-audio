@@ -44,7 +44,8 @@ machine used `hw:0,0` and masked it.
 - [x] F2 Regression assertions in `tests/smoke.sh`.
 - [x] F3 Correct the stale guidance in `dual-session-product.md`.
 - [x] F4 Restore audio on this machine and sync the installed copy.
-- [ ] F5 Commit + push to `origin/main`.
+- [x] F5 Commit + push to `origin/main` (fast-forward `ce87f03..be361e5`; the
+      remote one-liner now serves the fix).
 
 ## Acceptance criteria
 - The generated `~/.asoundrc` uses `pcm "hw:CARD=…,DEV=…"` for both slaves.
