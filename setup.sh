@@ -19,6 +19,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 . "$DIR/lib/audio.sh"
 # shellcheck disable=SC1091
+. "$DIR/lib/mixer.sh"
+# shellcheck disable=SC1091
 . "$DIR/lib/ui.sh"
 
 usage() {
@@ -97,6 +99,7 @@ print_summary() {
   echo "  .asoundrc:      $(path_state "$ASOUNDRC")"
   echo "  WirePlumber:    $(path_state "$WP_CONF")"
   echo "  PipeWire sink:  $(path_state "$PW_CONF")"
+  echo "  Mixer HW:       script=$(path_state "$PIN_SCRIPT") servicio=$(path_state "$MIXER_UNIT")"
   if [ "$ENABLE_UI" -eq 1 ]; then
     echo "  shell.json:     fusionado (botón 'Switch session' + launcher)"
   fi

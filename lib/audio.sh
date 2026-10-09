@@ -138,6 +138,9 @@ EOF
     fi
     sleep 2
   fi
+
+  # 7) pin the card's hardware playback mixer to unity (see lib/mixer.sh)
+  mixer_install
 }
 
 # Remove the shared-audio files the product created, restore the pre-install
@@ -164,6 +167,9 @@ audio_remove() {
   if [ -n "$(manifest_sig "$ASOUNDRC")" ] && [ ! -f "$ASOUNDRC" ]; then
     restore_backup "$ASOUNDRC"
   fi
+
+  # remove the hardware-mixer pin first (it needs the manifest to verify files)
+  mixer_remove
 
   apply_or_report "Eliminar manifiesto $MANIFEST" rm -f "$MANIFEST"
   # leave no empty product directories behind (may pre-exist: ignore failures)

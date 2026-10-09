@@ -28,6 +28,8 @@ fi
 # shellcheck disable=SC1091
 . "$DIR/lib/audio.sh"
 # shellcheck disable=SC1091
+. "$DIR/lib/mixer.sh"
+# shellcheck disable=SC1091
 . "$DIR/lib/ui.sh"
 
 # Leave the current directory before removing files that might contain it
@@ -51,6 +53,7 @@ echo "Eliminado:"
 echo "  - $DEST"
 echo "  - $APPS/dual-session-setup.desktop"
 echo "  - $CONF"
+echo "  - servicio de usuario $MIXER_SERVICE (deshabilitado; $MIXER_UNIT)"
 echo "Restaurado:"
 echo "  - $ASOUNDRC (desde respaldo, si existía)"
 echo "  - $SHELL_JSON (desde respaldo, si existía)"

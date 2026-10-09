@@ -29,6 +29,13 @@ SHELL_JSON="$HOME/.config/caelestia/shell.json"
 WP_CONF="$HOME/.config/wireplumber/wireplumber.conf.d/51-pch-shared-dmix.conf"
 PW_CONF="$HOME/.config/pipewire/pipewire.conf.d/10-pch-dmix-sink.conf"
 
+# Hardware-mixer pin: a standalone script + a systemd --user oneshot that keep
+# the shared card's hardware playback mixer at unity. See lib/mixer.sh for why.
+DEST="$HOME/.local/share/dual-session-setup"
+PIN_SCRIPT="$DEST/pin-mixer.sh"
+MIXER_UNIT="$HOME/.config/systemd/user/dual-session-audio-mixer.service"
+MIXER_SERVICE="dual-session-audio-mixer.service"
+
 # Files the product owns; content signatures go into $MANIFEST so uninstall
 # never deletes a user-modified file.
 TRACKED_FILES=(
@@ -36,6 +43,8 @@ TRACKED_FILES=(
   "$WP_CONF"
   "$PW_CONF"
   "$SHELL_JSON"
+  "$PIN_SCRIPT"
+  "$MIXER_UNIT"
 )
 
 # ---------------------------------------------------------------------------
@@ -172,6 +181,8 @@ load_config() {
   CHANNELS="${CHANNELS:-2}"
   PERIOD_SIZE="${PERIOD_SIZE:-1024}"
   BUFFER_SIZE="${BUFFER_SIZE:-8192}"
+  # Hardware playback controls pinned to unity (space-separated); see lib/mixer.sh.
+  MIXER_CONTROLS="${MIXER_CONTROLS:-Master PCM Front}"
 
   # config-file overrides (documented keys win over detection)
   if [ -f "$CONF" ]; then
@@ -230,6 +241,7 @@ PERIOD_SIZE=$PERIOD_SIZE
 BUFFER_SIZE=$BUFFER_SIZE
 ENABLE_UI=$ENABLE_UI
 IPC_KEY_BASE=$IPC_KEY_BASE
+MIXER_CONTROLS=$MIXER_CONTROLS
 EOF
 }
 
