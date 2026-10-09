@@ -76,6 +76,17 @@ assert_file "$HOME/.asoundrc" "setup crea ~/.asoundrc"
 assert_contains "$HOME/.asoundrc" 'pcm "hw:CARD=' "el slave del dmix usa hw (válido)"
 assert_absent   "$HOME/.asoundrc" 'plughw' "el slave del dmix no usa plughw (rompe dmix)"
 
+# Regression: a SECOND run must re-load the config it generated. The writer
+# once emitted `MIXER_CONTROLS=Master PCM Front` unquoted, so sourcing the
+# config tried to run `PCM` and aborted the whole setup on the next run.
+assert_contains "$HOME/.config/dual-session-setup.conf" 'MIXER_CONTROLS="' \
+  "la config cita MIXER_CONTROLS (recargable)"
+if HOME="$HOME" bash "$ROOT/setup.sh" >/dev/null 2>&1; then
+  ok "segunda corrida recarga su propia config"
+else
+  fail "segunda corrida recarga su propia config (falla al leer la config generada)"
+fi
+
 # --- uninstall removes the pin -------------------------------------------
 HOME="$HOME" bash "$ROOT/uninstall.sh" >/dev/null
 
