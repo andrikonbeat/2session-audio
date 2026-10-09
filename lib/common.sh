@@ -36,6 +36,14 @@ PIN_SCRIPT="$DEST/pin-mixer.sh"
 MIXER_UNIT="$HOME/.config/systemd/user/dual-session-audio-mixer.service"
 MIXER_SERVICE="dual-session-audio-mixer.service"
 
+# Public one-liners shown to the user (kept in one place).
+GITHUB_OWNER="andrikonbeat"
+GITHUB_REPO="2session-audio"
+GITHUB_BRANCH="main"
+RAW_BASE="https://raw.githubusercontent.com/$GITHUB_OWNER/$GITHUB_REPO/$GITHUB_BRANCH"
+RAW_INSTALL="$RAW_BASE/install.sh"
+RAW_UNINSTALL="$RAW_BASE/uninstall.sh"
+
 # Files the product owns; content signatures go into $MANIFEST so uninstall
 # never deletes a user-modified file.
 TRACKED_FILES=(
@@ -342,4 +350,13 @@ path_state() {
 has_backup() {
   local path="$1"
   if compgen -G "${path}.dss-bak-*" >/dev/null 2>&1; then printf 'sí'; else printf 'no'; fi
+}
+
+# Names of OTHER logged-in users (best-effort; empty when unknown). Used to
+# nudge the user to run the setup in the other session's account.
+other_session_users() {
+  command -v loginctl >/dev/null 2>&1 || return 0
+  loginctl list-sessions --no-legend 2>/dev/null \
+    | awk -v me="$USER" '$3 != "" && $3 != me {print $3}' \
+    | sort -u
 }

@@ -66,7 +66,7 @@ case "${1:-}" in
     ;;
 esac
 
-log_info "=== Dual-Session Setup — usuario: $USER ==="
+log_info "=== Dual-Session Setup — cuenta: $USER ==="
 load_config
 
 print_report() {
@@ -91,24 +91,36 @@ print_report() {
   echo "  $PW_CONF — $(path_state "$PW_CONF")"
   echo "  $SHELL_JSON — $(path_state "$SHELL_JSON") (respaldo: $(has_backup "$SHELL_JSON"))"
   echo "  Config: $CONF — $(path_state "$CONF")"
+  echo
+  echo "Verificación (opcional):"
+  echo "  wpctl status"
+  echo "  aplay -D plug:dmix_pch -t raw -r ${RATE} -c ${CHANNELS} -f ${FORMAT} /dev/zero   (Ctrl-C para detener)"
 }
 
 print_summary() {
+  local others=""
   echo
-  echo "=== RESUMEN — usuario: $USER ==="
-  echo "  .asoundrc:      $(path_state "$ASOUNDRC")"
-  echo "  WirePlumber:    $(path_state "$WP_CONF")"
-  echo "  PipeWire sink:  $(path_state "$PW_CONF")"
-  echo "  Mixer HW:       script=$(path_state "$PIN_SCRIPT") servicio=$(path_state "$MIXER_UNIT")"
+  echo "=========================================================="
+  echo " Listo: la cuenta '$USER' ya tiene audio compartido."
+  echo "=========================================================="
+  echo
   if [ "$ENABLE_UI" -eq 1 ]; then
-    echo "  shell.json:     fusionado (botón 'Switch session' + launcher)"
+    echo "También se agregó el botón 'Switch session' al shell."
+    echo
   fi
+  echo "IMPORTANTE — para que las DOS cuentas suenen al mismo tiempo:"
+  echo "iniciá sesión en la otra cuenta y corré EL MISMO comando:"
   echo
-  echo "Verificación:"
-  echo "  wpctl status"
-  echo "  aplay -D plug:dmix_pch -t raw -r ${RATE} -c ${CHANNELS} -f ${FORMAT} /dev/zero   (Ctrl-C para detener)"
+  echo "  curl -fsSL $RAW_INSTALL | bash"
   echo
-  echo "IMPORTANTE: REPITA ESTE SCRIPT EN LA CUENTA DE CADA USUARIO DE SESIÓN."
+  others="$(other_session_users | tr '\n' ' ')"
+  if [ -n "$others" ]; then
+    echo "  (detectamos otra sesión activa: $others)"
+    echo
+  fi
+  echo "Ver qué detectó esta cuenta:      $(basename "$0") --check"
+  echo "Desinstalar (en cada cuenta):"
+  echo "  curl -fsSL $RAW_UNINSTALL | bash"
 }
 
 case "$MODE" in
