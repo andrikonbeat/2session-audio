@@ -66,9 +66,11 @@ they need sudo, or how to check it worked.
 - U4 done — `README.md` restructured: non-technical quickstart / FAQ /
   uninstall on top; technical detail kept below.
 - U5 done — `tests/smoke.sh`: 5 new assertions for `install.sh` (17 total).
-- U6 in progress — evidence:
+- U6 done — evidence:
   - `bash -n` clean on all 8 scripts.
   - `install.sh --help` and `--check` behave and mutate nothing.
   - fake-HOME `install.sh` -> copies the program, configures the account
     (pin script + unit), and adds the menu entry.
   - `bash tests/smoke.sh` -> `smoke: OK` (17 ok, 0 fallos).
+  - Pushed to `origin/main` (fast-forward `f495b5f..08902c4`); the remote
+    one-liner now serves this version.
