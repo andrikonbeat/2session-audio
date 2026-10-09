@@ -75,6 +75,23 @@ assert_no_file "$MIXER_UNIT" "uninstall elimina la unidad systemd"
 assert_log "$SYSTEMCTL_LOG" "disable --now dual-session-audio-mixer.service" \
   "la unidad del mixer se deshabilita"
 
+# --- install.sh installs + configures in one command ---------------------
+HOME2="$TMP/home2"; mkdir -p "$HOME2"
+HOME="$HOME2" bash "$ROOT/install.sh" >/dev/null
+assert_file "$HOME2/.local/share/dual-session-setup/setup.sh" \
+  "install.sh copia el programa"
+assert_file "$HOME2/.local/share/dual-session-setup/pin-mixer.sh" \
+  "install.sh deja el mixer configurado (un solo comando)"
+assert_file "$HOME2/.local/share/applications/dual-session-setup.desktop" \
+  "install.sh crea la entrada de menú"
+assert_file "$HOME2/.config/systemd/user/dual-session-audio-mixer.service" \
+  "install.sh habilita el servicio del mixer"
+
+HOME3="$TMP/home3"; mkdir -p "$HOME3"
+HOME="$HOME3" bash "$ROOT/install.sh" --help >/dev/null 2>&1
+assert_no_file "$HOME3/.local/share/dual-session-setup/pin-mixer.sh" \
+  "install.sh --help no configura nada"
+
 echo
 if [ "$FAILS" -eq 0 ]; then
   echo "smoke: OK"
