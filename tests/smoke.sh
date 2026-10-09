@@ -47,6 +47,8 @@ assert_file()      { [ -f "$1" ] && ok "$2" || fail "$2 (falta $1)"; }
 assert_no_file()   { [ ! -e "$1" ] && ok "$2" || fail "$2 (existe $1)"; }
 assert_exec()      { [ -x "$1" ] && ok "$2" || fail "$2 (no ejecutable: $1)"; }
 assert_log()       { grep -qF -- "$2" "$1" && ok "$3" || fail "$3 (no está '$2' en $1)"; }
+assert_contains()  { grep -qF -- "$2" "$1" && ok "$3" || fail "$3 (falta '$2' en $1)"; }
+assert_absent()    { grep -qF -- "$2" "$1" && fail "$3 ('$2' aparece en $1)" || ok "$3"; }
 
 # --- --check and --dry-run must not write --------------------------------
 HOME="$HOME" bash "$ROOT/setup.sh" --check >/dev/null
@@ -66,6 +68,13 @@ assert_log "$SYSTEMCTL_LOG" "daemon-reload" "systemctl --user daemon-reload se l
 assert_log "$SYSTEMCTL_LOG" "enable --now dual-session-audio-mixer.service" \
   "la unidad del mixer se habilita"
 assert_log "$AMIXER_LOG" "100%" "el mixer de hardware se fija a 100%"
+
+# Regression: dmix/dsnoop slaves MUST point at an `hw` PCM. `plughw` makes
+# ALSA reject the dmix ("dmix plugin can be only connected to hw plugin"),
+# which kills PipeWire at startup and leaves the machine with no audio.
+assert_file "$HOME/.asoundrc" "setup crea ~/.asoundrc"
+assert_contains "$HOME/.asoundrc" 'pcm "hw:CARD=' "el slave del dmix usa hw (válido)"
+assert_absent   "$HOME/.asoundrc" 'plughw' "el slave del dmix no usa plughw (rompe dmix)"
 
 # --- uninstall removes the pin -------------------------------------------
 HOME="$HOME" bash "$ROOT/uninstall.sh" >/dev/null
